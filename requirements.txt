@@ -1,0 +1,8 @@
+pandas
+requests
+jupyter
+matplotlib
+plotly
+scikit-learn
+openpyxl
+lxml
