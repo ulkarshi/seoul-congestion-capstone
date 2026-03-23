@@ -2,16 +2,25 @@ name: Collect Seoul Congestion Data
 
 on:
   schedule:
-    - cron: '0 * * * *'   # every hour
-  workflow_dispatch:      # allows manual run
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: collect-data-main
+  cancel-in-progress: false
 
 jobs:
   collect-data:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -29,10 +38,11 @@ jobs:
       - name: Commit and push data
         run: |
           git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
-          git add data/raw/
-          git diff --quiet && git diff --staged --quiet || git commit -m "Auto data collection"
-    
+          git config --global user.email "github-actions@github.com"
+
+          git add data/raw/*.csv logs/collect_log.txt
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+
+          git commit -m "Auto data collection"
           git pull --rebase origin main
-          git push
-          
+          git push origin main
