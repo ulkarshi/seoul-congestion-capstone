@@ -1,0 +1,10 @@
+﻿run_time,status,file_name,rows_saved,notes
+2026-03-21 00:28:34,success,data/raw/seoul_citydata_2026-03-21_00-28-34.csv,5,all locations requested
+2026-03-21 02:30:23,success,data/raw/seoul_citydata_2026-03-21_02-30-23.csv,5,all locations requested
+2026-03-21 02:37:12,success,data/raw/seoul_citydata_2026-03-21_02-37-12.csv,5,all locations requested
+2026-03-21 02:42:03,success,data/raw/seoul_citydata_2026-03-21_02-42-03.csv,5,all locations requested
+2026-03-21 02:48:56,success,data/raw/seoul_citydata_2026-03-21_02-48-56.csv,5,all locations requested
+2026-03-21 21:49:03,success,data/raw/seoul_citydata_2026-03-21_21-49-03.csv,5,all locations requested
+2026-03-21 22:49:04,success,data/raw/seoul_citydata_2026-03-21_22-49-04.csv,5,all locations requested
+2026-03-21 23:48:57,success,data/raw/seoul_citydata_2026-03-21_23-48-57.csv,5,all locations requested
+2026-03-23 11:17:15,success,data/raw/seoul_citydata_2026-03-23_11-17-15.csv,5,all locations requested
