@@ -2,7 +2,8 @@ name: Collect Seoul Congestion Data
 
 on:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '38 * * * *'
+      timezone: 'Asia/Seoul'
   workflow_dispatch:
 
 concurrency:
