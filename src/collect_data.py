@@ -6,6 +6,12 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from urllib.parse import quote
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+now = datetime.now(ZoneInfo("Asia/Seoul"))
+timestamp = now.strftime("%Y-%m-%d_%H-%M-%S")
+filename = f"seoul_citydata_{timestamp}.csv"
 
 # ============================================================
 #  CONFIG
@@ -35,7 +41,7 @@ def find_tag(root, tag):
 rows = []
 
 for location in locations:
-    collected_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    collected_at = datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d %H:%M:%S")
     print(f"Calling: {location} ...")
 
     try:
@@ -80,7 +86,7 @@ for location in locations:
 df = pd.DataFrame(rows)
 
 os.makedirs("data/raw", exist_ok=True)
-filename = datetime.now().strftime("data/raw/seoul_citydata_%Y-%m-%d_%H-%M-%S.csv")
+filename = datetime.now(ZoneInfo("Asia/Seoul")).strftime("data/raw/seoul_citydata_%Y-%m-%d_%H-%M-%S.csv")
 df.to_csv(filename, index=False, encoding="utf-8-sig")
 
 print(f"\nSaved: {filename}")
@@ -94,7 +100,7 @@ os.makedirs("reports/weekly_logs", exist_ok=True)
 
 success = all(df["status_code"] == 200)
 log_row = pd.DataFrame([{
-    "run_time":   datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    "run_time":   datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d %H:%M:%S"),
     "status":     "success" if success else "partial_error",
     "file_name":  filename,
     "rows_saved": len(df),
