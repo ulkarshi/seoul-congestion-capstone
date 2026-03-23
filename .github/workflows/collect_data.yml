@@ -30,6 +30,10 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Sync with remote branch
+        run: |
+          git pull --rebase origin main
+
       - name: Run data collection
         run: python src/collect_data.py
 
@@ -38,7 +42,7 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          git add data/raw logs/collect_log.txt
+          git add -A
 
           if git diff --cached --quiet; then
             echo "No changes to commit"
@@ -46,6 +50,5 @@ jobs:
           fi
 
           git commit -m "Auto data collection"
-
-          git pull --rebase origin main
+          git pull --rebase --autostash origin main
           git push origin main
