@@ -52,6 +52,24 @@ def find_tag(root, tag):
 # ============================================================
 #  MAIN LOOP
 # ============================================================
+import time
+import requests
+
+def fetch_with_retry(url, retries=3, delay=10):
+    last_error = None
+
+    for attempt in range(1, retries + 1):
+        try:
+            response = requests.get(url, timeout=60)
+            response.raise_for_status()
+            return response
+        except Exception as e:
+            last_error = e
+            print(f"Attempt {attempt}/{retries} failed: {e}")
+            if attempt < retries:
+                time.sleep(delay)
+
+    raise last_error
 rows = []
 
 for location in locations:
@@ -61,8 +79,7 @@ for location in locations:
     try:
         encoded = quote(location)
         url = f"{BASE_URL}/{API_KEY}/xml/{SERVICE}/1/5/{encoded}"
-        response = requests.get(url, timeout=30)
-        response.raise_for_status()
+        response = fetch_with_retry(url, retries=3, delay=10)
 
         root = ET.fromstring(response.text)
 
