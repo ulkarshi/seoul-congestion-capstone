@@ -1,13 +1,27 @@
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
+
 import os
 import requests
 import pandas as pd
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from urllib.parse import quote
-from datetime import datetime
 from zoneinfo import ZoneInfo
+from pathlib import Path
+
+KST = ZoneInfo("Asia/Seoul")
+
+def already_saved_this_hour() -> bool:
+    now = datetime.now(KST)
+    hour_prefix = now.strftime("seoul_citydata_%Y-%m-%d_%H-")
+    data_dir = Path("data/raw")
+    existing = list(data_dir.glob(f"{hour_prefix}*.csv"))
+    return len(existing) > 0
+
+if already_saved_this_hour():
+    print("Data already saved for this hour. Exiting.")
+    sys.exit(0)
 
 now = datetime.now(ZoneInfo("Asia/Seoul"))
 timestamp = now.strftime("%Y-%m-%d_%H-%M-%S")
