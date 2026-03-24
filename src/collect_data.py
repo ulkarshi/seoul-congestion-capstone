@@ -76,10 +76,8 @@ for location in locations:
     collected_at = datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d %H:%M:%S")
     print(f"Calling: {location} ...")
 
-
     url = None
     response = None
-
 
     try:
         encoded = quote(location)
@@ -109,6 +107,7 @@ for location in locations:
         print(f"URL: {url}")
         print(f"Status: {getattr(response, 'status_code', 'no response')}")
         print(f"ERROR for {location}: {repr(e)}")
+
         rows.append({
             "collected_at":          collected_at,
             "location_name":         location,
@@ -122,10 +121,8 @@ for location in locations:
                 getattr(response, "text", "")[:5000]
                 if response is not None
                 else f"ERROR: {repr(e)}"
-            )"
+            )
         })
-        
-
 # ============================================================
 #  SAVE CSV
 # ============================================================
