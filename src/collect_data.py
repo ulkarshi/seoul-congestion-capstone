@@ -30,7 +30,7 @@ filename = f"seoul_citydata_{timestamp}.csv"
 # ============================================================
 #  CONFIG
 # ============================================================
-API_KEY  = "68646b6c69556c6b38366468747543"   # <-- replace with your key
+API_KEY  = "68646b6c69556c6b38366468747543"   
 BASE_URL = "http://openapi.seoul.go.kr:8088"
 SERVICE  = "citydata"
 
@@ -76,10 +76,18 @@ for location in locations:
     collected_at = datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d %H:%M:%S")
     print(f"Calling: {location} ...")
 
+
+    url = None
+    response = None
+
+
     try:
         encoded = quote(location)
         url = f"{BASE_URL}/{API_KEY}/xml/{SERVICE}/1/5/{encoded}"
         response = fetch_with_retry(url, retries=3, delay=10)
+
+        print(f"URL: {url}")
+        print(f"Status: {getattr(response, 'status_code', 'no response')}")
 
         root = ET.fromstring(response.text)
 
@@ -91,13 +99,16 @@ for location in locations:
             "congestion_msg":        find_tag(root, "AREA_CONGEST_MSG"),
             "congestion_level_3class": None,   # will fill in later
             "source_api":            SERVICE,
-            "status_code":           response.status_code,
-            "raw_response":          response.text[:5000]
+            "status_code":           getattr(response, "status_code", None),
+            "raw_response":          getattr(response, "text", "")[:5000]
         })
 
         print(f"  OK — congestion: {find_tag(root, 'AREA_CONGEST_LVL')}")
 
     except Exception as e:
+        print(f"URL: {url}")
+        print(f"Status: {getattr(response, 'status_code', 'no response')}")
+        print(f"ERROR for {location}: {repr(e)}")
         rows.append({
             "collected_at":          collected_at,
             "location_name":         location,
@@ -106,10 +117,14 @@ for location in locations:
             "congestion_msg":        None,
             "congestion_level_3class": None,
             "source_api":            SERVICE,
-            "status_code":           None,
-            "raw_response":          f"ERROR: {e}"
+            "status_code":           getattr(response, "status_code", None),
+            "raw_response":          (
+                getattr(response, "text", "")[:5000]
+                if response is not None
+                else f"ERROR: {repr(e)}"
+            )"
         })
-        print(f"  ERROR: {e}")
+        
 
 # ============================================================
 #  SAVE CSV
