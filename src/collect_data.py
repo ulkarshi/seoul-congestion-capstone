@@ -1,79 +1,156 @@
 import sys
-sys.stdout.reconfigure(encoding='utf-8')
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
 
 import os
-import requests
-import pandas as pd
-import xml.etree.ElementTree as ET
+import time
+from pathlib import Path
 from datetime import datetime
 from urllib.parse import quote
 from zoneinfo import ZoneInfo
-from pathlib import Path
+import xml.etree.ElementTree as ET
 
+import pandas as pd
+import requests
+
+
+# ============================================================
+#  TIMEZONE
+# ============================================================
 KST = ZoneInfo("Asia/Seoul")
 
-def already_saved_this_hour() -> bool:
-    now = datetime.now(KST)
-    hour_prefix = now.strftime("seoul_citydata_%Y-%m-%d_%H-")
-    data_dir = Path("data/raw")
-    existing = list(data_dir.glob(f"{hour_prefix}*.csv"))
-    return len(existing) > 0
-
-if already_saved_this_hour():
-    print("Data already saved for this hour. Exiting.")
-    sys.exit(0)
-
-now = datetime.now(ZoneInfo("Asia/Seoul"))
-timestamp = now.strftime("%Y-%m-%d_%H-%M-%S")
-filename = f"seoul_citydata_{timestamp}.csv"
 
 # ============================================================
 #  CONFIG
 # ============================================================
-API_KEY  = "68646b6c69556c6b38366468747543"   
+API_KEY = "68646b6c69556c6b38366468747543"
 BASE_URL = "http://openapi.seoul.go.kr:8088"
-SERVICE  = "citydata"
+SERVICE = "citydata"
 
 locations = [
     "광화문·덕수궁",
     "사당역",
     "서울대입구역",
     "노들섬",
-    "어린이대공원"
+    "어린이대공원",
 ]
+
+DATA_DIR = Path("data/raw")
+LOG_PATH = Path("reports/weekly_logs/week4_data_log.csv")
+
+
+# ============================================================
+#  LOGGING HELPERS
+# ============================================================
+def append_weekly_log(run_time: str, status: str, file_name: str, rows_saved: int, notes: str) -> None:
+    os.makedirs(LOG_PATH.parent, exist_ok=True)
+
+    log_row = pd.DataFrame([{
+        "run_time": run_time,
+        "status": status,
+        "file_name": file_name,
+        "rows_saved": rows_saved,
+        "notes": notes
+    }])
+
+    if LOG_PATH.exists():
+        log_row.to_csv(LOG_PATH, mode="a", header=False, index=False, encoding="utf-8-sig")
+    else:
+        log_row.to_csv(LOG_PATH, index=False, encoding="utf-8-sig")
+
+
+# ============================================================
+#  CHECK: already saved this hour?
+# ============================================================
+def already_saved_this_hour() -> bool:
+    now = datetime.now(KST)
+    hour_prefix = now.strftime("seoul_citydata_%Y-%m-%d_%H-")
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    existing = list(DATA_DIR.glob(f"{hour_prefix}*.csv"))
+    return len(existing) > 0
+
 
 # ============================================================
 #  HELPER — extract one field safely
 # ============================================================
-def find_tag(root, tag):
+def find_tag(root: ET.Element, tag: str):
     elem = root.find(f".//{tag}")
     return elem.text.strip() if elem is not None and elem.text else None
 
-# ============================================================
-#  MAIN LOOP
-# ============================================================
-import time
-import requests
 
-def fetch_with_retry(url, retries=3, delay=10):
+# ============================================================
+#  HTTP FETCH WITH RETRY
+# ============================================================
+def fetch_with_retry(url: str, retries: int = 3, delay: int = 10):
     last_error = None
 
     for attempt in range(1, retries + 1):
         try:
-            response = requests.get(url, timeout=60)
+            print(f"Request attempt {attempt}/{retries}")
+            response = requests.get(url, timeout=30)
+            print(f"Response status: {getattr(response, 'status_code', 'no response')}")
             response.raise_for_status()
             return response
+
+        except requests.exceptions.Timeout as e:
+            last_error = e
+            print(f"Attempt {attempt}/{retries} timeout: {repr(e)}")
+
+        except requests.exceptions.HTTPError as e:
+            last_error = e
+            status = getattr(e.response, "status_code", None)
+            print(f"Attempt {attempt}/{retries} http error: {status} {repr(e)}")
+
+        except requests.exceptions.RequestException as e:
+            last_error = e
+            print(f"Attempt {attempt}/{retries} request failed: {repr(e)}")
+
         except Exception as e:
             last_error = e
-            print(f"Attempt {attempt}/{retries} failed: {e}")
-            if attempt < retries:
-                time.sleep(delay)
+            print(f"Attempt {attempt}/{retries} failed: {repr(e)}")
+
+        if attempt < retries:
+            print(f"Sleeping {delay}s before retry...")
+            time.sleep(delay)
 
     raise last_error
+
+
+# ============================================================
+#  START LOG
+# ============================================================
+workflow_started_at = datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S")
+print(f"Workflow started at: {workflow_started_at}")
+print(f"GITHUB_RUN_ID: {os.getenv('GITHUB_RUN_ID', 'local')}")
+print(f"GITHUB_EVENT_NAME: {os.getenv('GITHUB_EVENT_NAME', 'local')}")
+
+
+# ============================================================
+#  SKIP IF THIS HOUR ALREADY SAVED
+# ============================================================
+if already_saved_this_hour():
+    print("Data already saved for this hour. Exiting.")
+    append_weekly_log(
+        run_time=datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S"),
+        status="skipped",
+        file_name="",
+        rows_saved=0,
+        notes="already saved this hour"
+    )
+    raise SystemExit(0)
+
+
+# ============================================================
+#  MAIN LOOP
+# ============================================================
 rows = []
+notes_list = []
 
 for location in locations:
-    collected_at = datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d %H:%M:%S")
+    collected_at = datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S")
     print(f"Calling: {location} ...")
 
     url = None
@@ -87,21 +164,32 @@ for location in locations:
         print(f"URL: {url}")
         print(f"Status: {getattr(response, 'status_code', 'no response')}")
 
-        root = ET.fromstring(response.text)
+        try:
+            root = ET.fromstring(response.text)
+        except ET.ParseError as e:
+            print(f"URL: {url}")
+            print(f"Status: {getattr(response, 'status_code', 'no response')}")
+            print(f"ERROR for {location}: XML parse error: {repr(e)}")
+            raise
+
+        api_reported_time = find_tag(root, "PPLTN_TIME")
+        congestion_raw = find_tag(root, "AREA_CONGEST_LVL")
+        congestion_msg = find_tag(root, "AREA_CONGEST_MSG")
 
         rows.append({
-            "collected_at":          collected_at,
-            "location_name":         location,
-            "api_reported_time":     find_tag(root, "PPLTN_TIME"),
-            "congestion_status_raw": find_tag(root, "AREA_CONGEST_LVL"),
-            "congestion_msg":        find_tag(root, "AREA_CONGEST_MSG"),
-            "congestion_level_3class": None,   # will fill in later
-            "source_api":            SERVICE,
-            "status_code":           getattr(response, "status_code", None),
-            "raw_response":          getattr(response, "text", "")[:5000]
+            "collected_at": collected_at,
+            "location_name": location,
+            "api_reported_time": api_reported_time,
+            "congestion_status_raw": congestion_raw,
+            "congestion_msg": congestion_msg,
+            "congestion_level_3class": None,
+            "source_api": SERVICE,
+            "status_code": getattr(response, "status_code", None),
+            "raw_response": getattr(response, "text", "")[:5000]
         })
 
-        print(f"  OK — congestion: {find_tag(root, 'AREA_CONGEST_LVL')}")
+        print(f"  OK — congestion: {congestion_raw}")
+        notes_list.append(f"success on {location}")
 
     except Exception as e:
         print(f"URL: {url}")
@@ -109,50 +197,67 @@ for location in locations:
         print(f"ERROR for {location}: {repr(e)}")
 
         rows.append({
-            "collected_at":          collected_at,
-            "location_name":         location,
-            "api_reported_time":     None,
+            "collected_at": collected_at,
+            "location_name": location,
+            "api_reported_time": None,
             "congestion_status_raw": None,
-            "congestion_msg":        None,
+            "congestion_msg": None,
             "congestion_level_3class": None,
-            "source_api":            SERVICE,
-            "status_code":           getattr(response, "status_code", None),
-            "raw_response":          (
+            "source_api": SERVICE,
+            "status_code": getattr(response, "status_code", None),
+            "raw_response": (
                 getattr(response, "text", "")[:5000]
                 if response is not None
                 else f"ERROR: {repr(e)}"
             )
         })
+
+        err_text = repr(e)
+        if isinstance(e, ET.ParseError) or "ParseError" in err_text:
+            notes_list.append(f"xml parse error on {location}")
+        elif "Timeout" in err_text:
+            notes_list.append(f"timeout on {location}")
+        else:
+            notes_list.append(f"error on {location}: {err_text}")
+
+
 # ============================================================
 #  SAVE CSV
 # ============================================================
 df = pd.DataFrame(rows)
 
-os.makedirs("data/raw", exist_ok=True)
-filename = datetime.now(ZoneInfo("Asia/Seoul")).strftime("data/raw/seoul_citydata_%Y-%m-%d_%H-%M-%S.csv")
+os.makedirs(DATA_DIR, exist_ok=True)
+filename = datetime.now(KST).strftime("data/raw/seoul_citydata_%Y-%m-%d_%H-%M-%S.csv")
 df.to_csv(filename, index=False, encoding="utf-8-sig")
 
 print(f"\nSaved: {filename}")
 print(f"Rows : {len(df)}")
 
-# ============================================================
-#  UPDATE DATA LOG
-# ============================================================
-log_path = "reports/weekly_logs/week4_data_log.csv"
-os.makedirs("reports/weekly_logs", exist_ok=True)
 
-success = all(df["status_code"] == 200)
-log_row = pd.DataFrame([{
-    "run_time":   datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d %H:%M:%S"),
-    "status":     "success" if success else "partial_error",
-    "file_name":  filename,
-    "rows_saved": len(df),
-    "notes":      "all locations requested"
-}])
+# ============================================================
+#  UPDATE WEEKLY LOG
+# ============================================================
+success_count = sum(1 for r in rows if r["congestion_status_raw"] is not None)
+error_count = len(rows) - success_count
 
-if os.path.exists(log_path):
-    log_row.to_csv(log_path, mode="a", header=False, index=False, encoding="utf-8-sig")
+if success_count == len(locations):
+    final_status = "success"
+    final_notes = f"all {len(locations)} success"
+elif success_count == 0:
+    final_status = "failed"
+    final_notes = "; ".join(notes_list)
 else:
-    log_row.to_csv(log_path, index=False, encoding="utf-8-sig")
+    final_status = "partial_error"
+    final_notes = "; ".join(notes_list)
 
-print(f"Log  : {log_path}")
+append_weekly_log(
+    run_time=datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S"),
+    status=final_status,
+    file_name=filename,
+    rows_saved=len(df),
+    notes=final_notes
+)
+
+print(f"Success rows: {success_count}")
+print(f"Error rows  : {error_count}")
+print(f"Log  : {LOG_PATH}")
