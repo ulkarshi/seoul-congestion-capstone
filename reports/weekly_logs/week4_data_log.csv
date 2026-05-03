@@ -507,3 +507,4 @@
 2026-05-04 03:00:10,success,data/raw/seoul_citydata_2026-05-04_03-00-10.csv,5,all 5 success
 2026-05-04 04:15:20,success,data/raw/seoul_citydata_2026-05-04_04-15-20.csv,5,all 5 success
 2026-05-04 05:04:11,success,data/raw/seoul_citydata_2026-05-04_05-04-11.csv,5,all 5 success
+2026-05-04 05:59:12,skipped,,0,already saved this hour
