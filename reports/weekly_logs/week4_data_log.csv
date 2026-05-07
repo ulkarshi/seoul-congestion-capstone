@@ -557,3 +557,4 @@
 2026-05-07 22:18:59,success,data/raw/seoul_citydata_2026-05-07_22-18-59.csv,5,all 5 success
 2026-05-08 00:40:54,success,data/raw/seoul_citydata_2026-05-08_00-40-54.csv,5,all 5 success
 2026-05-08 02:28:12,partial_error,data/raw/seoul_citydata_2026-05-08_02-28-12.csv,5,success on 광화문·덕수궁; success on 사당역; success on 서울대입구역; success on 노들섬; success on 어린이대공원
+2026-05-08 04:18:07,success,data/raw/seoul_citydata_2026-05-08_04-18-07.csv,5,all 5 success
