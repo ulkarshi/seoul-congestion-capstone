@@ -1,0 +1,6 @@
+﻿collected_at,location_name,api_reported_time,congestion_status_raw,congestion_msg,congestion_level_3class,source_api,status_code,raw_response
+2026-05-12 07:17:17,광화문·덕수궁,,,,,citydata,,"ERROR: ReadTimeout(ReadTimeoutError(""HTTPConnectionPool(host='openapi.seoul.go.kr', port=8088): Read timed out. (read timeout=30)""))"
+2026-05-12 07:19:10,사당역,,,,,citydata,,"ERROR: ReadTimeout(ReadTimeoutError(""HTTPConnectionPool(host='openapi.seoul.go.kr', port=8088): Read timed out. (read timeout=30)""))"
+2026-05-12 07:21:03,서울대입구역,,,,,citydata,,"ERROR: ReadTimeout(ReadTimeoutError(""HTTPConnectionPool(host='openapi.seoul.go.kr', port=8088): Read timed out. (read timeout=30)""))"
+2026-05-12 07:22:56,노들섬,,,,,citydata,,"ERROR: ReadTimeout(ReadTimeoutError(""HTTPConnectionPool(host='openapi.seoul.go.kr', port=8088): Read timed out. (read timeout=30)""))"
+2026-05-12 07:24:48,어린이대공원,,,,,citydata,,"ERROR: ReadTimeout(ReadTimeoutError(""HTTPConnectionPool(host='openapi.seoul.go.kr', port=8088): Read timed out. (read timeout=30)""))"
