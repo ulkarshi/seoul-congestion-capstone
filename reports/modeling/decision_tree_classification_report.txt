@@ -1,0 +1,20 @@
+MODEL: Decision Tree
+
+Accuracy: 0.6890380313199105
+Macro F1: 0.5203639013162823
+Weighted F1: 0.743951822890781
+
+              precision    recall  f1-score   support
+
+        High       0.32      0.73      0.45        30
+         Low       0.97      0.70      0.81       377
+      Medium       0.20      0.55      0.30        40
+
+    accuracy                           0.69       447
+   macro avg       0.50      0.66      0.52       447
+weighted avg       0.86      0.69      0.74       447
+
+Confusion matrix:
+[[264  80  33]
+ [  5  22  13]
+ [  2   6  22]]

@@ -2,7 +2,7 @@ import pandas as pd
 import os
 
 # Load merged data
-df = pd.read_csv("data/processed/seoul_citydata_merged.csv")
+df = pd.read_csv("data/processed/seoul_merged_final.csv")
 
 print("=== BEFORE CLEANING ===")
 print(f"Shape: {df.shape}")
@@ -49,7 +49,8 @@ rows_after_dedup = len(df)
 df["date"] = df["collected_at"].dt.date
 df["hour"] = df["collected_at"].dt.hour
 df["day_of_week"] = df["collected_at"].dt.day_name()
-df["weekend_flag"] = df["collected_at"].dt.weekday >= 5
+df["month"] = df["collected_at"].dt.month
+df["is_weekend"] = (df["collected_at"].dt.weekday >= 5).astype(int)
 
 # Sort by time
 df = df.sort_values("collected_at").reset_index(drop=True)
@@ -65,8 +66,8 @@ print(df["location_name"].value_counts())
 
 # Save cleaned file
 os.makedirs("data/processed", exist_ok=True)
-df.to_csv("data/processed/seoul_congestion_cleaned_v1.csv", index=False, encoding="utf-8-sig")
-print("\nSaved: data/processed/seoul_congestion_cleaned_v1.csv")
+df.to_csv("data/processed/seoul_cleaned_final.csv", index=False, encoding="utf-8-sig")
+print("\nSaved: data/processed/seoul_cleaned_final.csv")
 
 # Save cleaning summary
 os.makedirs("reports/notes", exist_ok=True)

@@ -32,7 +32,7 @@ print(f"\nCongestion levels seen:\n{merged['congestion_status_raw'].value_counts
 #  SAVE MERGED FILE
 # ============================================================
 os.makedirs("data/processed", exist_ok=True)
-out_path = "data/processed/seoul_citydata_merged.csv"
+out_path = "data/processed/seoul_merged_final.csv"
 merged.to_csv(out_path, index=False, encoding="utf-8-sig")
 
 print(f"\nMerged file saved: {out_path}")
