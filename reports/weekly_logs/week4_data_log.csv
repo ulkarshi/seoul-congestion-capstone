@@ -623,3 +623,4 @@
 2026-05-12 07:26:41,failed,data/raw/seoul_citydata_2026-05-12_07-26-41.csv,5,timeout on 광화문·덕수궁; timeout on 사당역; timeout on 서울대입구역; timeout on 노들섬; timeout on 어린이대공원
 2026-05-12 08:25:05,failed,data/raw/seoul_citydata_2026-05-12_08-25-05.csv,5,timeout on 광화문·덕수궁; timeout on 사당역; timeout on 서울대입구역; timeout on 노들섬; timeout on 어린이대공원
 2026-05-12 09:15:36,success,data/raw/seoul_citydata_2026-05-12_09-15-36.csv,5,all 5 success
+2026-05-12 13:12:01,success,data/raw/seoul_citydata_2026-05-12_13-12-01.csv,5,all 5 success
