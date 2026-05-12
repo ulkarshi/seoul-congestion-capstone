@@ -1,0 +1,20 @@
+MODEL: Random Forest Tuned max_depth 5
+
+Accuracy: 0.8008948545861297
+Macro F1: 0.6072802535651803
+Weighted F1: 0.8302005979089724
+
+              precision    recall  f1-score   support
+
+        High       0.35      0.73      0.48        30
+         Low       0.98      0.83      0.90       377
+      Medium       0.35      0.60      0.44        40
+
+    accuracy                           0.80       447
+   macro avg       0.56      0.72      0.61       447
+weighted avg       0.89      0.80      0.83       447
+
+Confusion matrix:
+[[312  37  28]
+ [  4  24  12]
+ [  1   7  22]]

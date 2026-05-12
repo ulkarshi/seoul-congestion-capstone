@@ -1,0 +1,5 @@
+﻿Model,Accuracy,Macro_F1,Weighted_F1,Features,Notes
+Random Forest Tuned max_depth 10,0.87248322147651,0.692273271295202,0.8840084956026937,"location_name, day_of_week, hour, month, is_weekend, is_peak_hour, lag_1, lag_2, lag_3, rolling_mean_3, rolling_std_3",Small Week 8 tuning test with max_depth=10.
+Random Forest Without Lag Features,0.87248322147651,0.6815368998845973,0.8787442626490545,"location_name, day_of_week, hour, month, is_weekend, is_peak_hour",Feature comparison: removes lag and rolling features.
+Random Forest Baseline,0.8702460850111857,0.6644595815327522,0.8758322408183269,"location_name, day_of_week, hour, month, is_weekend, is_peak_hour, lag_1, lag_2, lag_3, rolling_mean_3, rolling_std_3",Week 7 baseline Random Forest with lag and rolling features.
+Random Forest Tuned max_depth 5,0.8008948545861297,0.6072802535651803,0.8302005979089724,"location_name, day_of_week, hour, month, is_weekend, is_peak_hour, lag_1, lag_2, lag_3, rolling_mean_3, rolling_std_3",Small Week 8 tuning test with max_depth=5.

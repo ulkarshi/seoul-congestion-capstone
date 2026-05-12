@@ -1,0 +1,29 @@
+# Final Model Info — Week 8
+
+Final selected model:
+Random Forest Tuned max_depth 10
+
+Target:
+target_1h
+
+Features used:
+location_name, day_of_week, hour, month, is_weekend, is_peak_hour, lag_1, lag_2, lag_3, rolling_mean_3, rolling_std_3
+
+Test Accuracy:
+0.87248322147651
+
+Test Macro F1:
+0.692273271295202
+
+Test Weighted F1:
+0.8840084956026937
+
+Selection reason:
+The final model was selected based primarily on Macro F1-score because the dataset is imbalanced toward the Low congestion class. Random Forest was chosen because it performed better than the Week 7 baseline alternatives and provided stronger minority-class prediction performance.
+
+Week 8 improvement tested:
+1. Random Forest max_depth tuning
+2. Feature comparison with and without lag/rolling features
+
+Notes:
+Lag and rolling features represent recent congestion history and are important for short-term congestion prediction.
